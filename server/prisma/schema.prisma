@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -11,4 +6,70 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+
+model Menu{
+  id			Int 	 @id @default(autoincrement())
+  name  		String 		
+  description	String
+  price			Int
+  image			String
+  restaurentId	Int
+  restaurent  	Restaurent	@relation(fields: [restaurentId	],references: [id])
+  createdAt		DateTime @default(now())
+  updatedAt		DateTime @default(now())
+}
+
+model User{
+	id  		Int		@id @default(autoincrement())
+	fullname	String 	
+	email		String
+	password	String
+	contact		BigInt
+	address		String
+	city		String
+	country		String
+	profilePicture String
+	orders			Order[]
+	restaurents     Restaurent[]
+	isVerified		Boolean  @default(false)
+	admin			Boolean	 @default(false)
+	lastLogin		DateTime @default(now())
+	createdAt		DateTime @default(now())
+	updatedAt		DateTime @default(now())
+}
+model Restaurent{
+	id				Int				@id @default(autoincrement())
+	userId			Int				
+	user			User 			@relation(fields: [userId],references: [id])
+	restaurentName 	String
+	city			String
+	country			String
+	deliveryTime	Int
+	cuisines		String[]
+	menus			Menu[]
+	orders			Order[]
+}
+
+model Order{
+	id 				Int				@id @default(autoincrement())
+	userId			Int
+	user			User 			@relation(fields: [userId],references: [id])
+	restaurentId	 Int
+	restaurent       Restaurent		@relation(fields: [restaurentId],references: [id])
+	deliveryDetailsId	Int
+	deliveryDetails	DeliveryDetails	 @relation(fields: [deliveryDetailsId],references: [id])
+
+}
+model DeliveryDetails{
+	id			Int					@id @default(autoincrement())
+	email		String
+	address		String
+	city		String
+	orders		Order[]
+}
+model Item{
+	id 			Int					@id @default(autoincrement())
+
 }
