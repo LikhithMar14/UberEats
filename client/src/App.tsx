@@ -9,6 +9,11 @@ import VerifyEmail from "./auth/VerifyEmail"
 import HeroSection from "./components/HeroSection"
 import Profile from "./components/Profile"
 import SearchPage from "./components/SearchPage"
+import RestaurentDetail from "./components/RestaurentDetail"
+import Cart from "./components/Cart"
+import Restaurant from "./admin/Restaurent"
+import Orders from "./admin/Orders"
+import AddMenu from "./admin/AddMenu"
 
 const appRouter = createBrowserRouter([
   {
@@ -22,9 +27,30 @@ const appRouter = createBrowserRouter([
       {
         path:"/profile",
         element:<Profile/>
-      },{
+      },
+      {
         path:"/search/:id",
         element:<SearchPage/>
+      },
+      {
+        path:"/restaurent/:id",
+        element:<RestaurentDetail/>
+      },
+      {
+        path:"/cart",
+        element:<Cart/>
+      },
+      {
+        path:"/admin/restaurent",
+        element:<Restaurant/>
+      },
+      {
+        path:"/admin/orders",
+        element:<Orders/>
+      },
+      {
+        path:"/admin/Menu",
+        element:<AddMenu/>
       }
     ]
   },
