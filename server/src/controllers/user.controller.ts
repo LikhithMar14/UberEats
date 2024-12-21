@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import {  Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
@@ -10,7 +10,7 @@ import {
   generateVerificationCode,
 } from "../utils/TokenGenerate";
 import { cookieOptions, STATUS_CODES } from "../constants";
-import { sendPasswordResetEmail, sendVerificationEmail, sendWelcomeEmail } from "../NodeMailer/email";
+import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../NodeMailer/email";
 import { ApiResponse } from "../utils/ApiResponse";
 
 
@@ -207,7 +207,9 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response): 
             },
         });
 
-        await sendPasswordResetEmail(userDetails.email, "github.com/LikhithMar14");
+        await sendPasswordResetEmail(userDetails.email, `github.com/LikhithMar14/${resetToken}`);
+        console.log(resetToken);
+        
 
         return res.status(STATUS_CODES.OK).json({
             message: "Password reset link sent to your email",
@@ -219,3 +221,53 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response): 
         });
     }
 });
+export const resetPassword = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "Enter Your New Password"
+        });
+    }
+
+    const userDetails = await prisma.user.findFirst({
+        where: {
+            resetToken: token,
+            resetTokenExpiry: {
+                gt: new Date()
+            }
+        }
+    });
+
+    if (!userDetails) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "Invalid or expired reset token"
+        });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+        where: {
+            id: userDetails.id
+        },
+        data: {
+            password: hashedPassword,
+            resetToken: "",
+            resetTokenExpiry: null
+        }
+    });
+
+    await sendResetSuccessEmail(userDetails.email);
+
+    return res.status(STATUS_CODES.OK).json({
+        success: true,
+        message: "Password reset successfully"
+    });
+
+});
+
