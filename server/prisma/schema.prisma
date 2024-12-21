@@ -26,7 +26,7 @@ model User{
 	fullname	String 	
 	email		String  @unique
 	password	String
-	contact		Int
+	contact		String
 	address		String?
 	city		String?
 	country		String?
