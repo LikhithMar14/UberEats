@@ -9,7 +9,7 @@ import {
   generateVerificationCode,
 } from "../utils/TokenGenerate";
 import { cookieOptions, STATUS_CODES } from "../constants";
-import { sendVerificationEmail } from "../NodeMailer/email";
+import { sendVerificationEmail, sendWelcomeEmail } from "../NodeMailer/email";
 
 export const signup = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
@@ -125,3 +125,52 @@ export const login = asyncHandler(
     
   
 );
+
+
+export const verifyEmail = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+  const { verificationCode } = req.body;
+
+  // Find the user based on the verification token and expiry
+  const userDetails = await prisma.user.findFirst({
+    where: {
+      verificationToken: verificationCode,
+      verificationTokenExpiry: {
+        gt: new Date(),
+      },
+    },
+    select: {
+      id: true,
+      fullname: true,
+      email: true,
+      verificationToken: true,
+      verificationTokenExpiry: true,
+      isVerified: true,
+    },
+  });
+
+  console.log("I am here inside userDetails");
+
+  if (!userDetails) {
+    throw new ApiError(STATUS_CODES.NOT_FOUND, "User not found or token expired");
+  }
+
+
+  await prisma.user.update({
+    where: { id: userDetails.id },
+    data: {
+      isVerified: true,
+      verificationToken: "",
+      verificationTokenExpiry: null,
+    },
+  });
+
+
+  await sendWelcomeEmail(userDetails.email, userDetails.fullname);
+
+  return res.status(STATUS_CODES.OK).json({
+    success: true,
+    message: "Email verified successfully.",
+    userDetails,
+  });
+});
+
