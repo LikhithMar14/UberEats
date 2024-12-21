@@ -174,3 +174,9 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response): Pro
   });
 });
 
+export const logOut = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    return res.clearCookie("accessToken").clearCookie("refreshToken").status(STATUS_CODES.OK).json({
+        success:true,
+        message:"Logged Out Successfully"
+    })
+})
