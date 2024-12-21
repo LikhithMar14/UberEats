@@ -37,7 +37,7 @@ model User{
 	refreshToken	String?
 	refreshTokenExpiry 		DateTime?
 	verificationToken String
-	verificationTokenExpiry Int
+	verificationTokenExpiry DateTime?
 	admin			Boolean	 @default(false)
 	lastLogin		DateTime @default(now())
 	createdAt		DateTime @default(now())

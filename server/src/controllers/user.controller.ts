@@ -1,17 +1,19 @@
 import { Request, Response } from "express";
-import { User } from "@prisma/client";
 import bcrypt from "bcryptjs"
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../prismaClient";
-import jwt from "jsonwebtoken"
 import { generateAccessToken,generateVerificationCode,generateRefreshToken } from "../utils/TokenGenerate";
 import { cookieOptions, STATUS_CODES } from "../constants";
+import { sendVerificationEmail } from "../NodeMailer/email";
 
 
 
-export const signup = asyncHandler(async(req:Request,res:Response) => {
+
+
+export const signup = asyncHandler(async(req:Request,res:Response):Promise<any> => {
     const {contact,email,password,fullname} = req.body;
+    console.log("Took details")
 
     const userDetails = [contact,email,password,fullname];
 
@@ -31,12 +33,32 @@ export const signup = asyncHandler(async(req:Request,res:Response) => {
             password:hashedPassword,
             contact:Number(contact),
             verificationToken,
-            verificationTokenExpiry: Date.now() + 24 * 60 * 60 * 1000,
+            verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
         }
     })
     const accessToken = generateAccessToken(user)
     res.status(STATUS_CODES.CREATED).cookie('accessToken',accessToken,cookieOptions)
-    
+
+    await sendVerificationEmail(email,verificationToken)
+
+    const userWithoutPassword = await prisma.user.findUnique({
+        where:{email},
+        select:{
+            id:true,
+            email:true,
+            fullname:true,
+            address:true,
+            contact:true,
+            city:true,
+            country:true
+        }
+    })
+    return res.status(STATUS_CODES.CREATED).json({
+        success:true,
+        message:"Account created successfully",
+        user:userWithoutPassword
+    })
+
 
 
         
