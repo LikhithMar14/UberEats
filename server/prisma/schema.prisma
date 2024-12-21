@@ -24,16 +24,20 @@ model Menu{
 model User{
 	id  		Int		@id @default(autoincrement())
 	fullname	String 	
-	email		String
+	email		String  @unique
 	password	String
 	contact		BigInt
-	address		String
-	city		String
-	country		String
-	profilePicture String
+	address		String?
+	city		String?
+	country		String?
+	profilePicture String?
 	orders			Order[]
 	restaurents     Restaurent[]
 	isVerified		Boolean  @default(false)
+	refreshToken	String?
+	refreshTokenExpiry 		DateTime?
+	verificationToken String
+	verificationTokenExpiry Int
 	admin			Boolean	 @default(false)
 	lastLogin		DateTime @default(now())
 	createdAt		DateTime @default(now())

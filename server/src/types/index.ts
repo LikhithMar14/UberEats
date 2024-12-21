@@ -1,8 +1,16 @@
 import { UploadApiOptions, UploadApiResponse } from "cloudinary";
+import { User } from '@prisma/client'; 
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+    }
+  }
+}
 declare module "jsonwebtoken" {
   interface JwtPayload {
-    id: string;
+    userId: number;
     email?: string;
     username?: string;
   }
