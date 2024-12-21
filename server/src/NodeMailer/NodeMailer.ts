@@ -80,7 +80,7 @@ const mailOptions = {
             </div>
             <div class="content">
               <h2>Welcome to the Google Summer Internship Program!</h2>
-              <p>Dear [Recipient's Name],</p>
+              <p>Dear Praveen Ramisetti,<p>
               <p>
                 We are thrilled to inform you that you have been selected for the
                 prestigious Google Summer Internship Program. This is a fantastic
