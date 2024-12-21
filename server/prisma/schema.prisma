@@ -58,18 +58,37 @@ model Order{
 	user			User 			@relation(fields: [userId],references: [id])
 	restaurentId	 Int
 	restaurent       Restaurent		@relation(fields: [restaurentId],references: [id])
-	deliveryDetailsId	Int
+	
 	deliveryDetails	DeliveryDetails	 @relation(fields: [deliveryDetailsId],references: [id])
+	deliveryDetailsId	Int			@unique
+	cartItems			Item[]
+	totalAmount			Int
+	status				OrderStatus
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
 
+}
+enum OrderStatus {
+  pending
+  confirmed
+  preparing
+  outfordelivery
+  delivered
 }
 model DeliveryDetails{
 	id			Int					@id @default(autoincrement())
 	email		String
 	address		String
 	city		String
-	orders		Order[]
+	order		Order?   			
 }
 model Item{
 	id 			Int					@id @default(autoincrement())
+	menuId		Int					
+	image		String
+	price		Int
+	quantity	Int
+	orderId		Int
+	order		Order				@relation(fields: [orderId],references: [id])
 
 }
