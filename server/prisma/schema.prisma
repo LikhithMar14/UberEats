@@ -34,9 +34,11 @@ model User{
 	orders			Order[]
 	restaurents     Restaurent[]
 	isVerified		Boolean  @default(false)
-	refreshToken	String?
+	resetToken		String?//to access for forgot passwrod page
+	resetTokenExpiry		DateTime?
+	refreshToken	String?//normal refresh token
 	refreshTokenExpiry 		DateTime?
-	verificationToken String
+	verificationToken String//for otp verification 
 	verificationTokenExpiry DateTime?
 	admin			Boolean	 @default(false)
 	lastLogin		DateTime @default(now())

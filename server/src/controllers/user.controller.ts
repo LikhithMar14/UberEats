@@ -3,13 +3,16 @@ import bcrypt from "bcryptjs";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../prismaClient";
+import crypto from "crypto"
 import {
   generateAccessToken,
   generateRefreshToken,
   generateVerificationCode,
 } from "../utils/TokenGenerate";
 import { cookieOptions, STATUS_CODES } from "../constants";
-import { sendVerificationEmail, sendWelcomeEmail } from "../NodeMailer/email";
+import { sendPasswordResetEmail, sendVerificationEmail, sendWelcomeEmail } from "../NodeMailer/email";
+import { ApiResponse } from "../utils/ApiResponse";
+
 
 export const signup = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
@@ -180,3 +183,39 @@ export const logOut = asyncHandler(async(req:Request,res:Response):Promise<any> 
         message:"Logged Out Successfully"
     })
 })
+export const forgotPassword = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { email } = req.body;
+        const userDetails = await prisma.user.findFirst({
+            where: {
+                email: email,
+            },
+        });
+
+        if (!userDetails) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "User doesn't Exist" });
+        }
+
+        const resetToken = crypto.randomBytes(40).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000);
+
+        await prisma.user.update({
+            where: { id: userDetails.id },
+            data: {
+                resetToken: resetToken,
+                resetTokenExpiry: resetTokenExpiry,
+            },
+        });
+
+        await sendPasswordResetEmail(userDetails.email, "github.com/LikhithMar14");
+
+        return res.status(STATUS_CODES.OK).json({
+            message: "Password reset link sent to your email",
+        });
+    } catch (error) {
+        console.error("Error in forgotPassword:", error);
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Something went wrong, please try again later.",
+        });
+    }
+});
