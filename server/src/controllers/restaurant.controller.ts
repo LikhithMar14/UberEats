@@ -112,3 +112,46 @@ export const updateRestaurant = asyncHandler(async(req:Request,res:Response):Pro
     })
 
 })
+export const getRestaurantorder = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    const restaurantDetails = await prisma.restaurant.findFirst({
+        where:{
+            userId:req?.user?.id
+        }
+    })
+    if(!restaurantDetails)return res.status(STATUS_CODES.NOT_FOUND).json({
+        success:false,
+        message:"Restaurant not found",
+    })
+    const orders = await prisma.order.findMany({
+        where:{
+            RestaurantId:restaurantDetails.id
+        },
+        include:{
+            Restaurant:true,
+            user:true
+        }
+    })
+    return res.status(STATUS_CODES.OK).json({success:true,orders})
+})
+
+export const updateOrderStatus = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    const {orderId} = req.params;
+    const{status} = req.body;
+    const orderDetails = await prisma.order.findFirst({
+        where:{
+            id:Number(orderId)
+        }
+    })
+    if(!orderDetails)throw new ApiError(STATUS_CODES.NOT_FOUND,"Order not found")
+    
+    const updatedOrderDetails = await prisma.order.update({
+        where:{
+            id:Number(orderDetails.id)
+        },
+        data:{
+            status
+        }
+    })
+    return res.status(STATUS_CODES.OK).json({success:true,data:updatedOrderDetails})
+    
+})
