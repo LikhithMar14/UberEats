@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser"
 import cors from "cors"
 import { MAX_JSON_PAYLOAD_SIZE,STATIC_FOLDER_NAME } from "./constants"
 import userRouter from "./routes/user.route"
+import restaurantRouter from "./routes/restaurant.route"
 export const app = express()
 
 app.use(cors())
@@ -15,5 +16,6 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 
 
 app.use('/api/v1/auth',userRouter)
+app.use('/api/v1/restaurant',restaurantRouter)
 
 

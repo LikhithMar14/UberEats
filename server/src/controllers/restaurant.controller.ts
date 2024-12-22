@@ -6,8 +6,22 @@ import { uploadFileToCloudinary } from "../utils/cloudinary";
 import { TUserFiles } from "../types";
 import { STATUS_CODES } from "../constants";
 export const createRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any>=>{
-        const {restaurantName,city,country,deliveryTime,cuisines} = req.body
-        const file = req.file;
+        const {restaurantName,city,country,deliveryTime} = req.body
+        const {cuisines} = req.body
+        console.log(cuisines)
+        console.log(typeof cuisines)
+        let parsedCuisines: string[] = [];
+        if (typeof cuisines === 'string') {
+            try {
+                parsedCuisines = JSON.parse(cuisines); // Parse the stringified array
+            } catch (error) {
+                throw new ApiError(400, "Invalid format for cuisines");
+            }
+        } else if (Array.isArray(cuisines)) {
+            parsedCuisines = cuisines; // If it's already an array, use it directly
+        }
+
+    
         //Assuming  an user can have only one  restaurant
         const existingRestaurant = await prisma.restaurant.findFirst({
             where:{
@@ -17,14 +31,13 @@ export const createRestaurant = asyncHandler(async(req:Request,res:Response):Pro
         if(existingRestaurant){
             throw new ApiError(400,"User already has a restaurent")
         }
-        if(!file){
-            throw new ApiError(400,"Image is required!")
-        }
+
         if(typeof restaurantName !== "string"){
             throw new ApiError(400,"Invalid restaurant name")
         }
         const userId = req?.user?.id;
         const restaurantImagePath = (<TUserFiles>req.files)?.restaurantImage?.[0]?.path;
+        // console.log(restaurantImagePath)
 
         if(!restaurantImagePath)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Restaurant Image is required");
 
@@ -35,14 +48,14 @@ export const createRestaurant = asyncHandler(async(req:Request,res:Response):Pro
         if(!restaurantImageData){
             throw new ApiError(STATUS_CODES.INTERNAL_SERVER_ERROR,"Error uploading Restaurantimage")
         }
-
+        console.log(typeof cuisines)
         const newRestaurent = await prisma.restaurant.create({
             data:{
                 restaurantName : restaurantName,
                 city,
                 country,
-                deliveryTime,
-                cuisines,
+                deliveryTime:Number(deliveryTime),
+                cuisines:parsedCuisines,
                 imageUrl:restaurantImageData.secure_url,
                 user: {connect:{id:userId}}
             }

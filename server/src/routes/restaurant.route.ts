@@ -1,17 +1,17 @@
 import express from "express"
 import { createRestaurant, getRestaurant, getRestaurantorder, getSingleRestaurant, searchRestaurant, updateOrderStatus, updateRestaurant } from "../controllers/restaurant.controller";
 import upload from "../middlewares/multer.middleware";
-
+import { verifyToken } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.route("/").post(upload.single("imageFile"), createRestaurant);
-router.route("/").get(getRestaurant);
-router.route("/").put(upload.single("imageFile"), updateRestaurant);
-router.route("/order").get(getRestaurantorder);
-router.route("/order/:orderId/status").put(updateOrderStatus);
-router.route("/search/:searchText").get(searchRestaurant);
-router.route("/:id").get(getSingleRestaurant);
+router.route("/create").post(verifyToken,upload.fields([{name:'restaurantImage',maxCount:1}]), createRestaurant);
+router.route("/get").get(verifyToken,getRestaurant);
+router.route("/update").put(verifyToken,upload.single("restaurantImage"), updateRestaurant);
+router.route("/order").get(verifyToken,getRestaurantorder);
+router.route("/order/:orderId/status").put(verifyToken,updateOrderStatus);
+router.route("/search/:searchText").get(verifyToken,searchRestaurant);
+router.route("/:id").get(verifyToken,getSingleRestaurant);
 
 export default router;
 
