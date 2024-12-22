@@ -155,3 +155,29 @@ export const updateOrderStatus = asyncHandler(async(req:Request,res:Response):Pr
     return res.status(STATUS_CODES.OK).json({success:true,data:updatedOrderDetails})
     
 })
+
+export const  searchRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    const searchText = req.params.serchText || "";
+    
+})
+
+export const getSingleRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    const restaurantId = req.params.id;
+    if(!restaurantId)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Restaurant Id is required")
+    const restaurantDetails = await prisma.restaurant.findFirst({
+        where:{
+            id:Number(restaurantId)
+        },
+        include:{
+            menus:{
+                orderBy:{
+                    createdAt:"desc"
+                }
+            }
+        }
+
+    });
+
+    if(!restaurantDetails)throw new ApiError(STATUS_CODES.NOT_FOUND,"Restaurant not found")
+    return res.status(STATUS_CODES.OK).json({success:true,data:restaurantDetails})
+})
