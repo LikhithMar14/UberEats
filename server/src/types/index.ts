@@ -32,6 +32,7 @@ export type TUserFiles =
   | {
       profilePicture?: Express.Multer.File[];
       restaurantImage?: Express.Multer.File[];
+      menuImage?: Express.Multer.File[];
 
     }
   | undefined;

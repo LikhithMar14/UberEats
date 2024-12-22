@@ -57,6 +57,7 @@ model Restaurant{
 	menus			Menu[]
 	orders			Order[]
 	imageUrl		String
+	
 }
 
 model Order{
