@@ -15,8 +15,8 @@ model Menu{
   description	String
   price			Int
   image			String
-  RestaurantId	Int
-  Restaurant  	Restaurant	@relation(fields: [RestaurantId	],references: [id])
+  restaurantId	Int
+  restaurant  	Restaurant	@relation(fields: [restaurantId	],references: [id])
   createdAt		DateTime @default(now())
   updatedAt		DateTime @default(now())
 }
@@ -27,12 +27,12 @@ model User{
 	email		String  @unique
 	password	String
 	contact		String
-	address		String?
-	city		String?
-	country		String?
+	address		String?	@default("Update your address")
+	city		String?	@default("Update your city")
+	country		String? @default("Update your country")
 	profilePicture String?
 	orders			Order[]
-	Restaurants     Restaurant[]
+	restaurants     Restaurant[]
 	isVerified		Boolean  @default(false)
 	resetToken		String?//to access for forgot passwrod page
 	resetTokenExpiry		DateTime?
@@ -49,7 +49,7 @@ model Restaurant{
 	id				Int				@id @default(autoincrement())
 	userId			Int				
 	user			User 			@relation(fields: [userId],references: [id])
-	RestaurantName 	String
+	restaurantName 	String
 	city			String
 	country			String
 	deliveryTime	Int
@@ -64,13 +64,13 @@ model Order{
 	id 				Int				@id @default(autoincrement())
 	userId			Int
 	user			User 			@relation(fields: [userId],references: [id])
-	RestaurantId	 Int
-	Restaurant       Restaurant		@relation(fields: [RestaurantId],references: [id])
+	restaurantId	 Int
+	restaurant       Restaurant		@relation(fields: [restaurantId],references: [id])
 	
-	deliveryDetails	DeliveryDetails	 @relation(fields: [deliveryDetailsId],references: [id])
-	deliveryDetailsId	Int			@unique
+	deliveryDetails	DeliveryDetails?	@relation(fields: [deliveryDetailsId],references: [id])
+	deliveryDetailsId	Int?			@unique
 	cartItems			Item[]
-	totalAmount			Int
+	totalAmount			Float?
 	status				OrderStatus
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
@@ -88,11 +88,13 @@ model DeliveryDetails{
 	email		String
 	address		String
 	city		String
-	order		Order?   			
+	order 		Order?				
+  			
 }
 model Item{
 	id 			Int					@id @default(autoincrement())
-	menuId		Int					
+	menuId		Int
+	name 		String					
 	image		String
 	price		Int
 	quantity	Int
