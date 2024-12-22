@@ -15,7 +15,7 @@ const generateRefreshToken = ( user: User): string => {
   const payload = {
     userId: user.id,
   };
-  const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, {
+  const token = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET!, {
     expiresIn: "7d",
   });
   return token;

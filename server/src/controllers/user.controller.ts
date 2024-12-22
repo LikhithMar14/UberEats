@@ -353,17 +353,20 @@ export const updateProfile = asyncHandler(
 export const generateSession = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const incomingToken: string = req.signedCookies.refreshToken;
+    // console.log("Incoming Token:", incomingToken);
     if (!incomingToken)
       throw new ApiError(STATUS_CODES.BAD_REQUEST, "Refresh token not present");
     const decodedPayload = jwt.verify(
       incomingToken,
       process.env.REFRESH_TOKEN_SECRET as string
     );
+    // console.log("Decoded Payload:", decodedPayload);
+    
     const userId =
       typeof decodedPayload === "object" &&
         decodedPayload !== null &&
-        "id" in decodedPayload
-        ? Number(decodedPayload.id)
+        "userId" in decodedPayload
+        ? Number(decodedPayload.userId)
         : undefined;
     const userDetails = await prisma.user.findUnique({
       where: { id: userId },
