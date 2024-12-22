@@ -31,6 +31,7 @@ export type UploadFileType = (
 export type TUserFiles =
   | {
       profilePicture?: Express.Multer.File[];
+      restaurantImage?: Express.Multer.File[];
 
     }
   | undefined;

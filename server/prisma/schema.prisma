@@ -15,8 +15,8 @@ model Menu{
   description	String
   price			Int
   image			String
-  restaurentId	Int
-  restaurent  	Restaurent	@relation(fields: [restaurentId	],references: [id])
+  RestaurantId	Int
+  Restaurant  	Restaurant	@relation(fields: [RestaurantId	],references: [id])
   createdAt		DateTime @default(now())
   updatedAt		DateTime @default(now())
 }
@@ -32,7 +32,7 @@ model User{
 	country		String?
 	profilePicture String?
 	orders			Order[]
-	restaurents     Restaurent[]
+	Restaurants     Restaurant[]
 	isVerified		Boolean  @default(false)
 	resetToken		String?//to access for forgot passwrod page
 	resetTokenExpiry		DateTime?
@@ -45,25 +45,26 @@ model User{
 	createdAt		DateTime @default(now())
 	updatedAt		DateTime @default(now())
 }
-model Restaurent{
+model Restaurant{
 	id				Int				@id @default(autoincrement())
 	userId			Int				
 	user			User 			@relation(fields: [userId],references: [id])
-	restaurentName 	String
+	RestaurantName 	String
 	city			String
 	country			String
 	deliveryTime	Int
 	cuisines		String[]
 	menus			Menu[]
 	orders			Order[]
+	imageUrl		String
 }
 
 model Order{
 	id 				Int				@id @default(autoincrement())
 	userId			Int
 	user			User 			@relation(fields: [userId],references: [id])
-	restaurentId	 Int
-	restaurent       Restaurent		@relation(fields: [restaurentId],references: [id])
+	RestaurantId	 Int
+	Restaurant       Restaurant		@relation(fields: [RestaurantId],references: [id])
 	
 	deliveryDetails	DeliveryDetails	 @relation(fields: [deliveryDetailsId],references: [id])
 	deliveryDetailsId	Int			@unique
