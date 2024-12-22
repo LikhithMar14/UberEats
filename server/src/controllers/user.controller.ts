@@ -52,6 +52,7 @@ export const signup = asyncHandler(
         verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
+    console.log("Token Expiry: ",user.verificationTokenExpiry);
     const accessToken = generateAccessToken(user);
 
     res
@@ -136,6 +137,7 @@ export const login = asyncHandler(
 export const verifyEmail = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const { verificationCode } = req.body;
+    console.log(new Date());
 
     const userDetails = await prisma.user.findFirst({
       where: {

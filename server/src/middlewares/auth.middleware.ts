@@ -12,9 +12,12 @@ export const verifyToken = asyncHandler(async (req: Request, _, next: NextFuncti
 
         const decodedPayload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string)
 
-        const userId = typeof decodedPayload === 'object' && decodedPayload !== null && 'id' in decodedPayload
-            ? Number(decodedPayload.id)
+        
+        const userId = typeof decodedPayload === 'object' && decodedPayload !== null && 'userId' in decodedPayload
+            ? Number(decodedPayload.userId)
             : null;
+
+            
 
         if (userId === null || isNaN(userId)) {
             throw new ApiError(401, 'Invalid token payload');
