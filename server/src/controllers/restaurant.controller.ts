@@ -8,7 +8,15 @@ import { STATUS_CODES } from "../constants";
 export const createRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any>=>{
         const {restaurantName,city,country,deliveryTime,cuisines} = req.body
         const file = req.file;
-        //Assuming  an user can have multiple restaurants
+        //Assuming  an user can have only one  restaurant
+        const existingRestaurant = await prisma.restaurant.findFirst({
+            where:{
+                userId:req?.user?.id
+            }
+        })
+        if(existingRestaurant){
+            throw new ApiError(400,"User already has a restaurent")
+        }
         if(!file){
             throw new ApiError(400,"Image is required!")
         }
@@ -44,4 +52,21 @@ export const createRestaurant = asyncHandler(async(req:Request,res:Response):Pro
             message:"Restaurent created successfully!",
             data:newRestaurent
         })
+})
+export const getRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    const restuarantDetails = await prisma.restaurant.findFirst({
+        where:{
+            userId:req?.user?.id
+        },
+        include:{
+            menus:true
+        }
+    })
+    if(!restuarantDetails)return res.status(STATUS_CODES.NOT_FOUND).json({
+        success:false,
+        message:"Restaurant not found",
+        restaurant:[]
+    })
+    return res.status(STATUS_CODES.OK).json({success:true,restaurant:restuarantDetails})
+    
 })
