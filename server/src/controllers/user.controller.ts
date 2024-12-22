@@ -12,7 +12,8 @@ import {
 import { cookieOptions, STATUS_CODES } from "../constants";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../NodeMailer/email";
 import { ApiResponse } from "../utils/ApiResponse";
-
+import { uploadFileToCloudinary } from "../utils/cloudinary";
+import { TUserFiles } from "../types";
 
 export const signup = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
@@ -133,7 +134,7 @@ export const login = asyncHandler(
 export const verifyEmail = asyncHandler(async (req: Request, res: Response): Promise<any> => {
   const { verificationCode } = req.body;
 
-  // Find the user based on the verification token and expiry
+
   const userDetails = await prisma.user.findFirst({
     where: {
       verificationToken: verificationCode,
@@ -271,3 +272,50 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response): P
 
 });
 
+//data url no need of multer upload directly to cloudinary Or else if u have mulitpart/form-data then u need multer
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+    console.log(req.user);
+    
+    const userId = req.user?.id; 
+    if (!userId) {
+        return res.status(401).json({
+            success: false,
+            message: "User not authenticated",
+        });
+    }
+
+    const { fullname, email, address, city, country} = req.body;
+
+    const profilePicturePath = (<TUserFiles>req.files)?.profilePicture?.[0]?.path;
+    if(!profilePicturePath)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Profile Picture is required")
+    
+    const profilePictureData = await uploadFileToCloudinary(profilePicturePath,{
+      folder:'Images',
+      retries:1
+    })
+
+    if(!profilePictureData)throw new ApiError(STATUS_CODES.INTERNAL_SERVER_ERROR,"Failed to Upload Profile Picture, Try Again");
+
+
+
+    const updatedData = {
+        fullname,
+        email,
+        address,
+        city,
+        country,
+        profilePicture: profilePictureData.secure_url || undefined,
+    };
+
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: updatedData,
+    });
+
+    return res.status(200).json({
+        success: true,
+        user,
+        message: "Profile updated successfully",
+    });
+});

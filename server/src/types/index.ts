@@ -30,7 +30,7 @@ export type UploadFileType = (
 
 export type TUserFiles =
   | {
-      avatar?: Express.Multer.File[];
-      coverImage?: Express.Multer.File[];
+      profilePicture?: Express.Multer.File[];
+
     }
   | undefined;
