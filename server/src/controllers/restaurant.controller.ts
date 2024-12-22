@@ -70,3 +70,45 @@ export const getRestaurant = asyncHandler(async(req:Request,res:Response):Promis
     return res.status(STATUS_CODES.OK).json({success:true,restaurant:restuarantDetails})
     
 })
+export const updateRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
+    const {restaurantName,city,country,deliveryTime,cuisines} = req.body;
+    const file = req.file;
+
+    const restaurantDetails = await prisma.restaurant.findFirst({
+        where:{
+            userId:req.user?.id,
+        }
+    })
+    if(!restaurantDetails)throw new ApiError(STATUS_CODES.NOT_FOUND,"Restaurant not found")
+    const restaurantImagePath = (<TUserFiles>req.files)?.restaurantImage?.[0]?.path;
+
+    if(!restaurantImagePath)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Restaurant Image is required");
+
+    const restaurantImageData = await uploadFileToCloudinary(restaurantImagePath, {
+        folder: "Images",
+        retries: 1,
+    })
+    if(!restaurantImageData){
+        throw new ApiError(STATUS_CODES.INTERNAL_SERVER_ERROR,"Error uploading Restaurantimage")
+    }
+
+    const updatedRestaurent = await prisma.restaurant.update({
+        where:{
+            id:restaurantDetails.id
+        },
+        data:{
+            RestaurantName : restaurantName,
+            city,
+            country,
+            deliveryTime,
+            cuisines,
+            imageUrl:restaurantImageData.secure_url,
+        }
+    })
+    return res.status(201).json({
+        success:true,
+        message:"Restaurent updated successfully!",
+        data:updatedRestaurent
+    })
+
+})
