@@ -31,7 +31,7 @@ export const addMenu = asyncHandler(async(req:Request,res:Response):Promise<any>
             name,
             description,
             price,
-            RestaurantId:restaurant.id,
+            restaurantId:restaurant.id,
             image:menuImage?.secure_url!,
 
         }

@@ -38,7 +38,7 @@ export const createRestaurant = asyncHandler(async(req:Request,res:Response):Pro
 
         const newRestaurent = await prisma.restaurant.create({
             data:{
-                RestaurantName : restaurantName,
+                restaurantName : restaurantName,
                 city,
                 country,
                 deliveryTime,
@@ -97,7 +97,7 @@ export const updateRestaurant = asyncHandler(async(req:Request,res:Response):Pro
             id:restaurantDetails.id
         },
         data:{
-            RestaurantName : restaurantName,
+            restaurantName : restaurantName,
             city,
             country,
             deliveryTime,
@@ -124,10 +124,10 @@ export const getRestaurantorder = asyncHandler(async(req:Request,res:Response):P
     })
     const orders = await prisma.order.findMany({
         where:{
-            RestaurantId:restaurantDetails.id
+            restaurantId:restaurantDetails.id
         },
         include:{
-            Restaurant:true,
+            restaurant:true,
             user:true
         }
     })

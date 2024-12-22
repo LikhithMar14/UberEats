@@ -14,7 +14,7 @@ export const getOrders = asyncHandler(async(req:Request,res:Response):Promise<an
             id:req.user.id
         },
         include:{
-            Restaurant:true,
+            restaurant:true,
             user:true
         }
     })
