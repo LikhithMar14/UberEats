@@ -157,7 +157,41 @@ export const updateOrderStatus = asyncHandler(async(req:Request,res:Response):Pr
 })
 
 export const  searchRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
-    const searchText = req.params.serchText || "";
+    const searchText = req.params.searchText || "";
+    const searchQuery = req.query.searchQuery as string || "";
+    const selectedCuisines = (req.query.selectedCuisines as string || "").split(",").filter(cuisine => cuisine);
+    
+    const query: any = {};
+
+    if (searchText) {
+        query.OR = [
+            { restaurantName: { contains: searchText, mode: 'insensitive' } },
+            { city: { contains: searchText, mode: 'insensitive' } },
+            { country: { contains: searchText, mode: 'insensitive' } },
+        ];
+    }
+
+    if (searchQuery) {
+        query.OR = [
+            { restaurantName: { contains: searchQuery, mode: 'insensitive' } },
+            { cuisines: { contains: searchQuery, mode: 'insensitive' } }
+        ];
+    }
+
+    if (selectedCuisines.length > 0) {
+        query.cuisines = {
+            hasSome: selectedCuisines
+        };
+    }
+
+    const restaurants = await prisma.restaurant.findMany({
+        where: query
+    });
+
+    return res.status(200).json({
+        success: true,
+        data: restaurants
+    });
     
 })
 
@@ -180,4 +214,4 @@ export const getSingleRestaurant = asyncHandler(async(req:Request,res:Response):
 
     if(!restaurantDetails)throw new ApiError(STATUS_CODES.NOT_FOUND,"Restaurant not found")
     return res.status(STATUS_CODES.OK).json({success:true,data:restaurantDetails})
-})
+})  
