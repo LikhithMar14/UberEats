@@ -5,8 +5,8 @@ import { verifyToken } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.route("/add-menu").post(verifyToken,upload.fields([{name:'profilePicture',maxCount:1}]),addMenu);
-router.route("/edit/:id").put(verifyToken,upload.fields([{name:'profilePicture',maxCount:1}]), editMenu);
+router.route("/add-menu").post(verifyToken,upload.fields([{name:'menuImage',maxCount:1}]), addMenu);
+router.route("/edit/:id").put(verifyToken,upload.fields([{name:'menuImage',maxCount:1}]), editMenu);
  
 export default router;
 
