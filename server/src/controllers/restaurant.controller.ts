@@ -8,17 +8,17 @@ import { STATUS_CODES } from "../constants";
 export const createRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any>=>{
         const {restaurantName,city,country,deliveryTime} = req.body
         const {cuisines} = req.body
-        console.log(cuisines)
-        console.log(typeof cuisines)
+        // console.log(cuisines)
+        // console.log(typeof cuisines)
         let parsedCuisines: string[] = [];
         if (typeof cuisines === 'string') {
             try {
-                parsedCuisines = JSON.parse(cuisines); // Parse the stringified array
+                parsedCuisines = JSON.parse(cuisines); 
             } catch (error) {
                 throw new ApiError(400, "Invalid format for cuisines");
             }
         } else if (Array.isArray(cuisines)) {
-            parsedCuisines = cuisines; // If it's already an array, use it directly
+            parsedCuisines = cuisines;
         }
 
     
@@ -66,6 +66,7 @@ export const createRestaurant = asyncHandler(async(req:Request,res:Response):Pro
             data:newRestaurent
         })
 })
+
 export const getRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
     const restuarantDetails = await prisma.restaurant.findFirst({
         where:{
@@ -83,48 +84,72 @@ export const getRestaurant = asyncHandler(async(req:Request,res:Response):Promis
     return res.status(STATUS_CODES.OK).json({success:true,restaurant:restuarantDetails})
     
 })
-export const updateRestaurant = asyncHandler(async(req:Request,res:Response):Promise<any> => {
-    const {restaurantName,city,country,deliveryTime,cuisines} = req.body;
-    const file = req.file;
+export const updateRestaurant = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+    console.log(req.body)
+    const { restaurantName, city, country, deliveryTime } = req.body;
+    const { cuisines } = req.body;
 
-    const restaurantDetails = await prisma.restaurant.findFirst({
-        where:{
-            userId:req.user?.id,
+    // Parse cuisines
+    let parsedCuisines: string[] = [];
+    if (typeof cuisines === 'string') {
+        try {
+            parsedCuisines = JSON.parse(cuisines);
+        } catch (error) {
+            throw new ApiError(400, "Invalid format for cuisines");
         }
-    })
-    if(!restaurantDetails)throw new ApiError(STATUS_CODES.NOT_FOUND,"Restaurant not found")
-    const restaurantImagePath = (<TUserFiles>req.files)?.restaurantImage?.[0]?.path;
-
-    if(!restaurantImagePath)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Restaurant Image is required");
-
-    const restaurantImageData = await uploadFileToCloudinary(restaurantImagePath, {
-        folder: "Images",
-        retries: 1,
-    })
-    if(!restaurantImageData){
-        throw new ApiError(STATUS_CODES.INTERNAL_SERVER_ERROR,"Error uploading Restaurantimage")
+    } else if (Array.isArray(cuisines)) {
+        parsedCuisines = cuisines;
     }
 
-    const updatedRestaurent = await prisma.restaurant.update({
-        where:{
-            id:restaurantDetails.id
-        },
-        data:{
-            restaurantName : restaurantName,
-            city,
-            country,
-            deliveryTime,
-            cuisines,
-            imageUrl:restaurantImageData.secure_url,
-        }
-    })
-    return res.status(201).json({
-        success:true,
-        message:"Restaurent updated successfully!",
-        data:updatedRestaurent
-    })
+    // Find the user's restaurant
+    const userId = req?.user?.id;
+    const existingRestaurant = await prisma.restaurant.findFirst({
+        where: { userId },
+    });
 
-})
+    if (!existingRestaurant) {
+        throw new ApiError(404, "Restaurant not found");
+    }
+
+    // Validate restaurantName
+    if (restaurantName && typeof restaurantName !== "string") {
+        throw new ApiError(400, "Invalid restaurant name");
+    }
+
+    // Handle image upload
+    const restaurantImagePath = (<TUserFiles>req.files)?.restaurantImage?.[0]?.path;
+    let restaurantImageData;
+    if (restaurantImagePath) {
+        restaurantImageData = await uploadFileToCloudinary(restaurantImagePath, {
+            folder: "Images",
+            retries: 1,
+        });
+
+        if (!restaurantImageData) {
+            throw new ApiError(STATUS_CODES.INTERNAL_SERVER_ERROR, "Error uploading restaurant image");
+        }
+    }
+
+    // Update restaurant details
+    const updatedRestaurant = await prisma.restaurant.update({
+        where: { id: existingRestaurant.id },
+        data: {
+            restaurantName: restaurantName || existingRestaurant.restaurantName,
+            city: city || existingRestaurant.city,
+            country: country || existingRestaurant.country,
+            deliveryTime: deliveryTime ? Number(deliveryTime) : existingRestaurant.deliveryTime,
+            cuisines: parsedCuisines.length > 0 ? parsedCuisines : existingRestaurant.cuisines,
+            imageUrl: restaurantImageData?.secure_url || existingRestaurant.imageUrl,
+        },
+    });
+
+    return res.status(200).json({
+        success: true,
+        message: "Restaurant updated successfully!",
+        data: updatedRestaurant,
+    });
+});
+
 export const getRestaurantorder = asyncHandler(async(req:Request,res:Response):Promise<any> => {
     const restaurantDetails = await prisma.restaurant.findFirst({
         where:{

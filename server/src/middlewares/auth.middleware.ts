@@ -29,6 +29,8 @@ export const verifyToken = asyncHandler(async (req: Request, _, next: NextFuncti
         if (!user) throw new ApiError(401, "User not found");
 
         req.user = user;
+        console.log("verified successufully");
+        
         next();
     } catch (error) {
         throw new ApiError(

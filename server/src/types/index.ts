@@ -21,6 +21,7 @@ export type Folder = "Images";
 export interface CustomUploadApiOptions extends UploadApiOptions {
   folder?: Folder;
   retries?: number;
+  
 }
 
 export type UploadFileType = (
