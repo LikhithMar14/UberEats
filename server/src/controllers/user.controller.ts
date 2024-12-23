@@ -157,6 +157,7 @@ export const verifyEmail = asyncHandler(
     });
 
     console.log("I am here inside userDetails");
+    console.log(userDetails)
 
     if (!userDetails) {
       throw new ApiError(
