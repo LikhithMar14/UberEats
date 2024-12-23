@@ -138,6 +138,7 @@ export const verifyEmail = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const { verificationCode } = req.body;
     console.log(new Date());
+    console.log(verificationCode)
 
     const userDetails = await prisma.user.findFirst({
       where: {

@@ -1,12 +1,14 @@
 import express from "express" 
 import upload from "../middlewares/multer.middleware";  
-import { addMenu,editMenu } from "../controllers/menu.controller";
+import { verifyToken } from "../middlewares/auth.middleware";
+import { getOrders } from "../controllers/order.controller";
+
 
 const router = express.Router();
 
-router.route("/").post(upload.single("image"), addMenu);
-router.route("/:id").put(upload.single("image"), editMenu);
- 
+
+router.route("/").get(verifyToken, getOrders);
+router.route("/checkout/create-checkout-session").post(verifyToken, getOrders);
+
+
 export default router;
-
-

@@ -11,12 +11,46 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { menuSchema, menuState } from "@/schema/restaurentSchema";
-import { Loader2, Plus } from "lucide-react";
+import {  Loader2, Plus } from "lucide-react";
 import { FormEvent, useState } from "react";
+import EditMenu from "./EditMenu";
+
+const menus = [
+  {
+    title: "Samosa",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit.",
+    price: 50,
+    image: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  },
+  {
+    title: "Samosa",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit.",
+    price: 50,
+    image: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  },  {
+    title: "Samosa",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit.",
+    price: 50,
+    image: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  },  {
+    title: "Samosa",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit.",
+    price: 50,
+    image: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  },  {
+    title: "Samosa",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit.",
+    price: 50,
+    image: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  },
+
+]
 
 const AddMenu = () => {
   const [open, setOpen] = useState<boolean>(false);
+  const [editOpen, setEditOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedMenu,setSelectedMenu] = useState<any>({})
   const [input, setInput] = useState<menuState>({
     name: "",
     description: "",
@@ -40,7 +74,7 @@ const AddMenu = () => {
     setTimeout(() => {
       console.log("Submitted Data:", input);
       setLoading(false);
-      setOpen(false); // Close dialog after submission
+      setOpen(false); 
     }, 2000);
   };
 
@@ -59,7 +93,7 @@ const AddMenu = () => {
         <h1 className="font-bold md:font-extrabold text-lg md:text-2xl">
           Available Menus
         </h1>
-
+          {/*//Passing a prop to the Dialog component to open the EditMenu component*/}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange hover:bg-orangeHover">
@@ -146,8 +180,43 @@ const AddMenu = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="mt-6 space-y-4"></div>
+      {
+        menus.map((menu:any,idx:number)=>(
+          <div  key={idx} className="mt-6 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
+            <img
+              src={menu.image}
+              alt=""
+              className="md:w-24 md:h-24 h-16 object-cover rounded-lg"
+            />
+            <div className="flex-1">
+              <h1 className="text-lg font-semibold text-gray-800">{menu.title}</h1>
+              <p className="text-sm text-gray-600 mt-1">{menu.description}</p>
+              <h2 className="text-md font-semibold mt-2 ">
+                Price: <span className="text-orange">₹ {menu.price}</span>
+              </h2>
+              <div>
+                <Button 
+
+                onClick={()=>{
+                  setSelectedMenu(menu)
+                  setEditOpen(true)
+                }}
+                
+                size = {'sm'} className="bg-orange hover:bg-orangeHover mt-2" >Edit</Button>
+               </div>
+            </div>
+          </div>
+        </div>
+
+
+        ))
+      }
+      <div>
+      <EditMenu selectedMenu={selectedMenu} editOpen={editOpen} setEditOpen={setEditOpen} /> 
     </div>
+    </div>
+
   );
 };
 
