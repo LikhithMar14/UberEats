@@ -9,10 +9,16 @@ import { prisma } from "../prismaClient";
 
 export const addMenu = asyncHandler(async(req:Request,res:Response):Promise<any> => {
     const {name,description,price} = req.body;
-    const menuImageFile = req.file
-    if(!menuImageFile)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Menu image is required")
+
+
     const menuImagePath = (<TUserFiles>req.files)?.menuImage?.[0]?.path;
+
     if(!menuImagePath)throw new ApiError(STATUS_CODES.BAD_REQUEST,"Menu image is required")
+        if (!menuImagePath)
+            throw new ApiError(
+              STATUS_CODES.BAD_REQUEST,
+              "Menu Image is required"
+            );
     const menuImage = await uploadFileToCloudinary(menuImagePath, {
         folder: "Images",
         retries: 1,
