@@ -211,6 +211,7 @@ export const logOut = asyncHandler(
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     try {
+      console.log("Inside Forgot Password Controller")
       const { email } = req.body;
       const userDetails = await prisma.user.findFirst({
         where: {
@@ -234,19 +235,22 @@ export const forgotPassword = asyncHandler(
           resetTokenExpiry: resetTokenExpiry,
         },
       });
-
+      console.log(process.env.FRONTEND_URL)
       await sendPasswordResetEmail(
         userDetails.email,
-        `github.com/LikhithMar14/${resetToken}`
+        `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
+        
       );
       console.log(resetToken);
 
       return res.status(STATUS_CODES.OK).json({
+        sucess:true,
         message: "Password reset link sent to your email",
       });
     } catch (error) {
       console.error("Error in forgotPassword:", error);
       return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        sucess:true,
         message: "Something went wrong, please try again later.",
       });
     }

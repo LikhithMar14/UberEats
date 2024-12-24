@@ -2,6 +2,7 @@ import { LoginInputState, SignupInputState } from "@/schema/userSchema";
 import { create } from "zustand";
 import axios from "axios";
 import { toast } from "sonner";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 const API_END_POINT = "http://localhost:8000/api/v1/auth";
 axios.defaults.withCredentials = true;
@@ -27,6 +28,9 @@ interface UserState {
   login: (input: LoginInputState) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  generateSession: () => Promise<void>;
+  forgotPassword: (email:string) => Promise<void>;
+  resetPassword : (token: string, newPassword: string) => Promise<void>;
 }
 
 interface Response {
@@ -36,7 +40,7 @@ interface Response {
 }
 
 
-export const useUserStore = create<UserState>((set) => ({
+export const useUserStore = create<UserState>()(persist((set) => ({
   user: null,
   isAuthenticated: false,
   isCheckingAuth: false,
@@ -92,10 +96,15 @@ export const useUserStore = create<UserState>((set) => ({
           
         
       } else {
+        set({
+          loading:false,
+          isAuthenticated:false
+        })
         toast.error(response.data.message || "Verification failed");
       }
     } catch (error: any) {
-      set({ loading: false });
+      set({ loading: false ,isAuthenticated:false
+      });
 
       toast.error(error?.response?.data?.message || "Verification failed");
       throw error;
@@ -173,9 +182,72 @@ export const useUserStore = create<UserState>((set) => ({
         isCheckingAuth: false,
       });
     }
-  }
+  },
+  generateSession : async() => {
+    try {
+      const response = await axios.get(`${API_END_POINT}/generate-session`, {
+        withCredentials: true,
+      });
   
+      if (response.status === 200) {
+        console.log('Session generated successfully:', response.data);
+      } else {
+        throw new Error('Failed to generate session');
+      }
+    } catch (error) {
+      console.error('Error generating session:', error);
+      throw error;
+    }
+  },
+  forgotPassword: async (email: string) => {
+    try {
+        set({ loading: true });
+        const response = await axios.post<Response>(`${API_END_POINT}/forgot-password`, { email });
+        console.log(response.data);
+        if (response.data.success) {
+            toast.success(response.data.message);
+        } else {
+            toast.error(response.data.message); // Optionally handle the failure case
+        }
+    } catch (error: any) {
+        toast.error(error.response.data.message);
+    } 
+},
 
-  
-   
-}));
+resetPassword: async (token: string, newPassword: string) => {
+    try {
+        set({ loading: true });
+        const response = await axios.post<Response>(`${API_END_POINT}/reset-password/${token}`, { newPassword });
+        if (response.data.success) {
+            toast.success(response.data.message);
+        } else {
+            toast.error(response.data.message); // Optionally handle the failure case
+        }
+    } catch (error: any) {
+        toast.error(error.response.data.message);
+    } finally {
+        set({ loading: false }); // Ensure loading is always set to false
+    }
+},
+
+  updateProfile: async (input:any) => {
+    try { 
+        const response = await axios.put<Response>(`${API_END_POINT}/profile/update`, input,{
+            headers:{
+                'Content-Type':'application/json'
+            }
+        });
+        if(response.data.success){
+            toast.success(response.data.message);
+            set({user:response.data.user, isAuthenticated:true});
+        }
+    } catch (error:any) { 
+        toast.error(error.response.data.message);
+    }
+}}),
+
+{
+  name: 'user-name',
+  storage: createJSONStorage(() => localStorage),
+}
+))
