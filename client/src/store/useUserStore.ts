@@ -211,7 +211,9 @@ export const useUserStore = create<UserState>()(persist((set) => ({
         }
     } catch (error: any) {
         toast.error(error.response.data.message);
-    } 
+    } finally {
+        set({ loading: false }); // Ensure loading is always set to false
+    }
 },
 
 resetPassword: async (token: string, newPassword: string) => {
