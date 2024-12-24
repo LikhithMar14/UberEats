@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Menubar,
   MenubarContent,
@@ -41,10 +41,13 @@ import { Avatar, AvatarImage } from "./ui/avatar";
 import { AvatarFallback } from "./ui/avatar";
 
 import { Separator } from "./ui/separator";
+import { useUserStore } from "@/store/useUserStore";
+
 
 const NavBar = () => {
-  const admin = true;
-  const loading = false;
+  const { user, loading, logout } = useUserStore();
+  const navigate = useNavigate()
+
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -57,7 +60,7 @@ const NavBar = () => {
             <Link to="/">Home</Link>
             <Link to="/profile">Profile</Link>
             <Link to="/order/status">Order</Link>
-            {admin && (
+            {user?.admin && (
               <Menubar>
                 <MenubarMenu>
                   <MenubarTrigger>Dashboard</MenubarTrigger>
@@ -104,7 +107,7 @@ const NavBar = () => {
             </Link>
             <div>
               <Avatar>
-                <AvatarImage />
+                <AvatarImage src = {user?.profilePicture} alt = "profile picture"/>
                 <AvatarFallback>L</AvatarFallback>
               </Avatar>
             </div>
@@ -115,7 +118,10 @@ const NavBar = () => {
                   Logout
                 </Button>
               ) : (
-                <Button className="bg-orange hover:bg-orangeHover">
+                <Button onClick = {()=>{
+                  logout();
+                  navigate('/login')
+                }}className="bg-orange hover:bg-orangeHover">
                   Logout
                 </Button>
               )}
@@ -130,8 +136,8 @@ const NavBar = () => {
 
 const MobileNavbar = () => {
 
-  const admin = true;
-  const loading = true;
+  const { user, loading, logout } = useUserStore();
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -184,7 +190,7 @@ const MobileNavbar = () => {
             <ShoppingCart />
             <span>Cart (0)</span>
           </Link>
-          {admin && (
+          {user?.admin && (
             <>
               <Link
                 to="/admin/menu"
@@ -225,7 +231,7 @@ const MobileNavbar = () => {
                 Please wait
               </Button>
             ) : (
-              <Button
+              <Button onClick = {logout}
 
                 className="bg-orange hover:bg-hoverOrange"
               >

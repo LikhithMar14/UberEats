@@ -2,24 +2,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator"
 import { LoginInputState, userLoginSchema } from "@/schema/userSchema";
+import { useUserStore } from "@/store/useUserStore";
 
 
 import { Loader2, LockKeyhole, Mail } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 const Login = () => {
+    const {loading,login} = useUserStore();
     const [input,setInput] = useState<LoginInputState>({
         email:"",
         password:"",
     })
+    const navigate = useNavigate()
     const[errors,setErrors] = useState<Partial<LoginInputState>>({})
     const changeEventHandler = (e:ChangeEvent<HTMLInputElement>) =>{
         const {name,value} = e.target;
         setInput({...input,[name]:value})
     }
-    const loginSubmitHandler = (e:FormEvent) =>{
+    const loginSubmitHandler = async(e:FormEvent) =>{
         e.preventDefault();
         const result = userLoginSchema.safeParse(input);
         if(!result.success){
@@ -27,11 +30,19 @@ const Login = () => {
             setErrors(fieldErrors as Partial<LoginInputState>);
             return;
         }
-        //login api implementation
+        try{
+          await login(input);
+          navigate('/')
 
-        console.log(input)
+
+        }catch(err){
+          console.log(err)
+        }
+
+
+
     }
-    const loading  = false;
+
   return (
     <div className="flex items-center justify-center h-screen w-screen">
       <form className="md:p-8 w-full max-w-md rouded-lg md:border border-gray-200 mx-4 " onSubmit={loginSubmitHandler}>
@@ -70,8 +81,8 @@ const Login = () => {
 
         <div className="mb-10">
             {
-                loading ?  <Button className = 'w-full bg-orange hover:bg-black ' disabled><Loader2 className="animate-spin mr-2 h-4 w-4 "/>Please wait</Button>
-                :<Button className = 'w-full bg-orange hover:bg-orangeHover'>Login</Button>
+                loading ?  <Button type="submit" className = 'w-full bg-orange hover:bg-black ' disabled><Loader2 className="animate-spin mr-2 h-4 w-4 "/>Please wait</Button>
+                :<Button type="submit" className = 'w-full bg-orange hover:bg-orangeHover'>Login</Button>
             }
             
         </div>

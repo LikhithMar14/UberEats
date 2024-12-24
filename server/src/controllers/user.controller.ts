@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../prismaClient";
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -41,6 +41,7 @@ export const signup = asyncHandler(
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = generateVerificationCode();
+    console.log("Generated Verification Code ", verificationToken);
 
     const user = await prisma.user.create({
       data: {
@@ -52,7 +53,7 @@ export const signup = asyncHandler(
         verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
-    console.log("Token Expiry: ",user.verificationTokenExpiry);
+    console.log("Token Expiry: ", user.verificationTokenExpiry);
     const accessToken = generateAccessToken(user);
 
     res
@@ -122,6 +123,7 @@ export const login = asyncHandler(
         country: true,
       },
     });
+    console.log("Logged In Successfully!");
 
     res
       .cookie("accessToken", accessToken, cookieOptions)
@@ -136,9 +138,17 @@ export const login = asyncHandler(
 
 export const verifyEmail = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
+    console.log("Inside Email Verification");
     const { verificationCode } = req.body;
+
     console.log(new Date());
-    console.log(verificationCode)
+    console.log("Verification Code in Input: ", verificationCode);
+    const Human = await prisma.user.findFirst({
+      where: {
+        verificationToken: verificationCode,
+      },
+    });
+    console.log("Verification Code in Database:", Human);
 
     const userDetails = await prisma.user.findFirst({
       where: {
@@ -158,7 +168,7 @@ export const verifyEmail = asyncHandler(
     });
 
     console.log("I am here inside userDetails");
-    console.log(userDetails)
+    console.log(userDetails);
 
     if (!userDetails) {
       throw new ApiError(
@@ -181,7 +191,7 @@ export const verifyEmail = asyncHandler(
     return res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Email verified successfully.",
-      userDetails,
+      user: userDetails,
     });
   }
 );
@@ -351,6 +361,33 @@ export const updateProfile = asyncHandler(
     });
   }
 );
+export const checkAuth = asyncHandler(
+  async (req: Request, res: Response): Promise<any> => {
+    console.log("Inside Check Auth");
+
+    const userId = Number(req.user?.id);
+    console.log(userId);
+
+    const user = await prisma.user.findFirst({
+      where: { id: userId },
+      select: {
+        id: true,
+      },
+    });
+    console.log(user);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  }
+);
 
 export const generateSession = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
@@ -363,17 +400,18 @@ export const generateSession = asyncHandler(
       process.env.REFRESH_TOKEN_SECRET as string
     );
     // console.log("Decoded Payload:", decodedPayload);
-    
+
     const userId =
       typeof decodedPayload === "object" &&
-        decodedPayload !== null &&
-        "userId" in decodedPayload
+      decodedPayload !== null &&
+      "userId" in decodedPayload
         ? Number(decodedPayload.userId)
         : undefined;
     const userDetails = await prisma.user.findUnique({
       where: { id: userId },
     });
-    if (!userDetails) throw new ApiError(STATUS_CODES.NOT_FOUND, "User not found");
+    if (!userDetails)
+      throw new ApiError(STATUS_CODES.NOT_FOUND, "User not found");
     const accessToken = generateAccessToken(userDetails);
     const refreshToken = generateRefreshToken(userDetails);
     res.cookie("accessToken", accessToken, cookieOptions);

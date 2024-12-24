@@ -5,16 +5,27 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useUserStore } from "@/store/useUserStore";
+import {  REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { Loader2 } from "lucide-react";
 import {  FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const VerifyEmail = () => {
+  const {verifyEmail,loading}  = useUserStore();
   const [otp, setOtp] = useState<string>("");
-  const loading = true;
-  const onOtpComplete = (e: FormEvent) => {
+  const navigate = useNavigate()
+  const onOtpComplete = async (e: FormEvent) => {
     e.preventDefault();
-    console.log(otp);
+    console.log("OTP:",otp)
+    try{
+      await verifyEmail(otp);
+      navigate('/login')
+
+    }catch(err){
+      console.log(err)
+    }
+    
   };
 
   return (
@@ -34,7 +45,7 @@ const VerifyEmail = () => {
                 maxLength={6}
                 value={otp}
                 onChange={(value) => setOtp(value)}
-                pattern= {REGEXP_ONLY_DIGITS}
+                pattern= {REGEXP_ONLY_DIGITS_AND_CHARS}
 
               >
                 <InputOTPGroup>
