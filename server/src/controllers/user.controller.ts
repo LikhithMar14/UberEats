@@ -72,6 +72,7 @@ export const signup = asyncHandler(
         contact: true,
         city: true,
         country: true,
+        profilePicture:true
       },
     });
 
@@ -121,6 +122,7 @@ export const login = asyncHandler(
         contact: true,
         city: true,
         country: true,
+        profilePicture:true
       },
     });
     console.log("Logged In Successfully!");
@@ -363,14 +365,22 @@ export const updateProfile = asyncHandler(
       address,
       city,
       country,
-      profilePicture: profilePictureData.secure_url || undefined,
+      profilePicture: profilePictureData.secure_url
     };
-    console.log(updatedData);
+    console.log("Updated Profile Picture: ",updatedData.profilePicture);
 
     // Update user in database
     const user = await prisma.user.update({
       where: { id: userId },
       data: updatedData,
+      select:{
+        fullname:true,
+        email:true,
+        address:true,
+        city:true,
+        country:true,
+        profilePicture:true
+      }
     });
 
     console.log("Uploaded Successfully!");

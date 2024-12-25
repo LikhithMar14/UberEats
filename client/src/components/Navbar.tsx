@@ -44,9 +44,13 @@ import { Separator } from "./ui/separator";
 import { useUserStore } from "@/store/useUserStore";
 
 
+
 const NavBar = () => {
+ 
+  const navigate = useNavigate();
   const { user, loading, logout } = useUserStore();
-  const navigate = useNavigate()
+
+
 
 
   return (
@@ -105,9 +109,11 @@ const NavBar = () => {
                 5
               </Button>
             </Link>
-            <div>
-              <Avatar>
-                <AvatarImage src = {user?.profilePicture} alt = "profile picture"/>
+            <div >
+              <Avatar onClick={() => {
+                navigate('/profile')
+              }} className="cursor-pointer">
+               <AvatarImage src={user?.profilePicture || "https://github.com/shadcn.png"} />
                 <AvatarFallback>L</AvatarFallback>
               </Avatar>
             </div>

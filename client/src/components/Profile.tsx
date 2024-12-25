@@ -7,7 +7,7 @@ import {
   Plus,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent,useRef, useState } from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
@@ -24,6 +24,12 @@ const Profile = () => {
     country: user?.country || "",
     profilePicture: user?.profilePicture || "",
   });
+
+  console.log("User: ",user)
+
+
+
+
   const imageRef = useRef<HTMLInputElement | null>(null);
   const [selectedProfilePicture, setSelectedProfilePicture] = useState<
     File | string
@@ -46,13 +52,15 @@ const Profile = () => {
     try {
       setIsLoading(true);
 
-      // Create a FormData object
+
       const formData = new FormData();
       formData.append("fullname", profileData.fullname);
       formData.append("email", profileData.email);
       formData.append("address", profileData.address);
       formData.append("city", profileData.city);
       formData.append("country", profileData.country);
+      
+
 
       if (selectedProfilePicture instanceof File) {
         formData.append("profilePicture", selectedProfilePicture);
@@ -77,12 +85,12 @@ const Profile = () => {
           <Avatar className="relative md:w-28 md:h-28 w-20 h-20">
             <AvatarImage
               src={
-                selectedProfilePicture instanceof File
+                (selectedProfilePicture instanceof File
                   ? URL.createObjectURL(selectedProfilePicture)
-                  : selectedProfilePicture
+                  : selectedProfilePicture )|| "https://github.com/shadcn.png"
               }
             />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback>LM</AvatarFallback>
             <input
               ref={imageRef}
               className="hidden"
@@ -102,12 +110,12 @@ const Profile = () => {
             name="fullname"
             value={profileData.fullname}
             onChange={changeHandler}
-            className="font-bold text-2xl outline-none border-none focus-visible:ring-transparent"
+            className="font-bold text-2xl md:text-5xl outline-none border-none focus-visible:ring-transparent"
           />
         </div>
       </div>
       <div className="grid md:grid-cols-4 md:gap-2 gap-3 my-10">
-        <div className="flex items-center gap-4 rounded-sm p-2 bg-gray-200">
+        <div className="flex items-center gap-4 rounded-sm p-5 justify-center bg-gray-200">
           <Mail className="text-gray-500" />
           <div className="w-full">
             <Label>Email</Label>
@@ -120,7 +128,7 @@ const Profile = () => {
             />
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-sm p-2 bg-gray-200">
+        <div className="flex items-center gap-4 rounded-sm  p-5 justify-center bg-gray-200">
           <LocateIcon className="text-gray-500" />
           <div className="w-full">
             <Label>Address</Label>
@@ -132,7 +140,7 @@ const Profile = () => {
             />
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-sm p-2 bg-gray-200">
+        <div className="flex items-center gap-4 rounded-sm  p-5 justify-center bg-gray-200">
           <MapPin className="text-gray-500" />
           <div className="w-full">
             <Label>City</Label>
@@ -144,7 +152,7 @@ const Profile = () => {
             />
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-sm p-2 bg-gray-200">
+        <div className="flex items-center gap-4 rounded-sm  p-5 justify-center bg-gray-200">
           <MapPinnedIcon className="text-gray-500" />
           <div className="w-full">
             <Label>Country</Label>

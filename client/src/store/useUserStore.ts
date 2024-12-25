@@ -62,7 +62,8 @@ export const useUserStore = create<UserState>()(persist((set) => ({
       );
 
       if (response.data.success) {
-        set({ loading: false });
+        set({ loading: false ,user:response.data.user});
+    
         toast.success(response.data.message)
       }
     } catch (error: any) {
@@ -128,11 +129,14 @@ export const useUserStore = create<UserState>()(persist((set) => ({
       );
 
       if (response.data.success) {
+        console.log(response.data)
         set({
           loading: false,
           user: response.data.user, 
           isAuthenticated: true,
         });
+        console.log("Hello")
+        console.log(response.data.user)
         toast.success(response.data.message);
       }
     } catch (err: any) {
@@ -248,7 +252,7 @@ updateProfile: async (formData) => {
 
     if (response.data.success) {
       toast.success(response.data.message);
-      set({ user: response.data.user, isAuthenticated: true });
+      set({ user: response.data.user,  isAuthenticated: true });
     }
   } catch (error: any) {
     toast.error(error?.response?.data?.message || "Profile update failed");
