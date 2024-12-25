@@ -310,7 +310,8 @@ export const resetPassword = asyncHandler(
 
 export const updateProfile = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
-    console.log(req.user);
+    console.log("In updateProfile Controller");
+    console.log("Files: ", req.files);
 
     const userId = req.user?.id;
     if (!userId) {
@@ -320,23 +321,34 @@ export const updateProfile = asyncHandler(
       });
     }
 
+    // Extract form data from body
     const { fullname, email, address, city, country } = req.body;
 
-    const profilePicturePath = (<TUserFiles>req.files)?.profilePicture?.[0]
-      ?.path;
+    // Check if required fields are provided
+    if (!fullname || !email || !address || !city || !country) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // Handle file upload
+    console.log("Logging Request files",req.files)
+
+    const profilePicturePath = (<TUserFiles>req.files)?.profilePicture?.[0]?.path;
+    console.log(profilePicturePath);
+
     if (!profilePicturePath)
       throw new ApiError(
         STATUS_CODES.BAD_REQUEST,
         "Profile Picture is required"
       );
 
-    const profilePictureData = await uploadFileToCloudinary(
-      profilePicturePath,
-      {
-        folder: "Images",
-        retries: 1,
-      }
-    );
+    // Upload to Cloudinary
+    const profilePictureData = await uploadFileToCloudinary(profilePicturePath, {
+      folder: "Images",
+      retries: 1,
+    });
 
     if (!profilePictureData)
       throw new ApiError(
@@ -344,6 +356,7 @@ export const updateProfile = asyncHandler(
         "Failed to Upload Profile Picture, Try Again"
       );
 
+    // Prepare the data to update
     const updatedData = {
       fullname,
       email,
@@ -352,12 +365,15 @@ export const updateProfile = asyncHandler(
       country,
       profilePicture: profilePictureData.secure_url || undefined,
     };
+    console.log(updatedData);
 
+    // Update user in database
     const user = await prisma.user.update({
       where: { id: userId },
       data: updatedData,
     });
 
+    console.log("Uploaded Successfully!");
     return res.status(200).json({
       success: true,
       user,

@@ -1,58 +1,39 @@
-import { Loader2, LocateIcon, Mail, MapPin, MapPinnedIcon, Plus } from "lucide-react";
+import {
+  Loader2,
+  LocateIcon,
+  Mail,
+  MapPin,
+  MapPinnedIcon,
+  Plus,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { FormEvent, useRef, useState } from "react";
-import { Avatar,AvatarFallback } from "./ui/avatar";
-import { AvatarImage } from "./ui/avatar";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-
-interface ProfileData {
-  fullname: string;
-  email: string;
-  address: string;
-  city: string;
-  country: string;
-  profilePicture: string;
-}
+import { useUserStore } from "@/store/useUserStore";
 
 const Profile = () => {
-  const [loading, setLoading] = useState(false); 
-  const [profileData, setProfileData] = useState<ProfileData>({
-    fullname: "Likhith Chimata",
-    email: "Likhithcvsrl@gmail.com",
-    address: "Jane Street 98th-line",
-    city: "NewYork",
-    country: "USA",
-    profilePicture: "",
+  const { user, updateProfile } = useUserStore();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [profileData, setProfileData] = useState({
+    fullname: user?.fullname || "",
+    email: user?.email || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    country: user?.country || "",
+    profilePicture: user?.profilePicture || "",
   });
-
   const imageRef = useRef<HTMLInputElement | null>(null);
-  const [selectedProfilePicture, setSelectedProfilePicture] = useState<string>("");
+  const [selectedProfilePicture, setSelectedProfilePicture] = useState<
+    File | string
+  >(profileData.profilePicture || "");
 
   const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setSelectedProfilePicture(result);
-        setProfileData((prevData) => ({
-          ...prevData,
-          profilePicture: result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      setSelectedProfilePicture(file);
     }
-  };
-
-  const updateProfileHandler = (e: FormEvent<HTMLElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    // Simulate a profile update (you can replace this with an actual API call)
-    setTimeout(() => {
-      setLoading(false);
-      alert("Profile updated successfully!");
-    }, 2000);
   };
 
   const changeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,13 +41,48 @@ const Profile = () => {
     setProfileData({ ...profileData, [name]: value });
   };
 
+  const updateProfileHandler = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+
+      // Create a FormData object
+      const formData = new FormData();
+      formData.append("fullname", profileData.fullname);
+      formData.append("email", profileData.email);
+      formData.append("address", profileData.address);
+      formData.append("city", profileData.city);
+      formData.append("country", profileData.country);
+
+      if (selectedProfilePicture instanceof File) {
+        formData.append("profilePicture", selectedProfilePicture);
+      } else {
+        formData.append("profilePicture", profileData.profilePicture);
+      }
+
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
+      }
+      await updateProfile(formData);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={updateProfileHandler} className="max-w-7xl mx-auto my-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Avatar className="relative md:w-28 md:h-28 w-20 h-20">
-            <AvatarImage src={selectedProfilePicture}/>
-            <AvatarFallback>LC</AvatarFallback>
+            <AvatarImage
+              src={
+                selectedProfilePicture instanceof File
+                  ? URL.createObjectURL(selectedProfilePicture)
+                  : selectedProfilePicture
+              }
+            />
+            <AvatarFallback>CN</AvatarFallback>
             <input
               ref={imageRef}
               className="hidden"
@@ -76,7 +92,7 @@ const Profile = () => {
             />
             <div
               onClick={() => imageRef.current?.click()}
-              className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 bg-slate-700 bg-opacity-50 rounded-3xl cursor-pointer"
+              className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-50 rounded-full cursor-pointer"
             >
               <Plus className="text-white w-8 h-8" />
             </div>
@@ -86,7 +102,7 @@ const Profile = () => {
             name="fullname"
             value={profileData.fullname}
             onChange={changeHandler}
-            className="font-bold text-2xl md:text-4xl outline-none border-none focus-visible:ring-transparent"
+            className="font-bold text-2xl outline-none border-none focus-visible:ring-transparent"
           />
         </div>
       </div>
@@ -96,7 +112,7 @@ const Profile = () => {
           <div className="w-full">
             <Label>Email</Label>
             <input
-            disabled
+              disabled
               name="email"
               value={profileData.email}
               onChange={changeHandler}
@@ -142,13 +158,15 @@ const Profile = () => {
         </div>
       </div>
       <div className="text-center">
-        {loading ? (
+        {isLoading ? (
           <Button disabled className="bg-orange hover:bg-hoverOrange">
             <Loader2 className="mr-2 w-4 h-4 animate-spin" />
             Please wait
           </Button>
         ) : (
-          <Button type="submit" className="bg-orange hover:bg-hoverOrange">Update</Button>
+          <Button type="submit" className="bg-orange hover:bg-hoverOrange">
+            Update
+          </Button>
         )}
       </div>
     </form>

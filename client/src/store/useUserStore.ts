@@ -13,6 +13,7 @@ interface User {
   contact: string;
   address: string;
   city: string;
+  country:string;
   profilePicture: string;
   admin: boolean;
   isVerified: boolean;
@@ -31,6 +32,7 @@ interface UserState {
   generateSession: () => Promise<void>;
   forgotPassword: (email:string) => Promise<void>;
   resetPassword : (token: string, newPassword: string) => Promise<void>;
+  updateProfile: (formData:FormData) => Promise<void>
 }
 
 interface Response {
@@ -207,12 +209,12 @@ export const useUserStore = create<UserState>()(persist((set) => ({
         if (response.data.success) {
             toast.success(response.data.message);
         } else {
-            toast.error(response.data.message); // Optionally handle the failure case
+            toast.error(response.data.message);
         }
     } catch (error: any) {
         toast.error(error.response.data.message);
     } finally {
-        set({ loading: false }); // Ensure loading is always set to false
+        set({ loading: false }); 
     }
 },
 
@@ -223,30 +225,38 @@ resetPassword: async (token: string, newPassword: string) => {
         if (response.data.success) {
             toast.success(response.data.message);
         } else {
-            toast.error(response.data.message); // Optionally handle the failure case
+            toast.error(response.data.message); 
         }
     } catch (error: any) {
         toast.error(error.response.data.message);
     } finally {
-        set({ loading: false }); // Ensure loading is always set to false
+        set({ loading: false });
     }
 },
 
-  updateProfile: async (input:any) => {
-    try { 
-        const response = await axios.put<Response>(`${API_END_POINT}/profile/update`, input,{
-            headers:{
-                'Content-Type':'application/json'
-            }
-        });
-        if(response.data.success){
-            toast.success(response.data.message);
-            set({user:response.data.user, isAuthenticated:true});
-        }
-    } catch (error:any) { 
-        toast.error(error.response.data.message);
+updateProfile: async (formData) => {
+  set({ loading: true }); // Set loading to true when the request starts
+  // console.log("input:", formData.profilePicture);
+
+  try {
+
+    const response = await axios.put<Response>(`${API_END_POINT}/profile/update`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data", 
+      },
+    });
+
+    if (response.data.success) {
+      toast.success(response.data.message);
+      set({ user: response.data.user, isAuthenticated: true });
     }
-}}),
+  } catch (error: any) {
+    toast.error(error?.response?.data?.message || "Profile update failed");
+  } finally {
+    set({ loading: false });
+  }
+}
+}),
 
 {
   name: 'user-name',

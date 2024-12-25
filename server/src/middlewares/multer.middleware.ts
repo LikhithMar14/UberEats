@@ -14,4 +14,4 @@
   });
 
 
-  export default multer({ storage });
+export default multer({ storage });
