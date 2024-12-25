@@ -394,7 +394,8 @@ export const updateProfile = asyncHandler(
         address:true,
         city:true,
         country:true,
-        profilePicture:true
+        profilePicture:true,
+        isVerified:true
       }
     });
 
@@ -422,7 +423,8 @@ export const checkAuth = asyncHandler(
         address:true,
         city:true,
         country:true,
-        profilePicture:true
+        profilePicture:true,
+        isVerified:true
       },
     });
     console.log(user);

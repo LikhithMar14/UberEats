@@ -16,6 +16,8 @@ import Orders from "./admin/Orders";
 import Success from "./components/Success";
 import { useUserStore } from "./store/useUserStore";
 import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import Loader from "./components/Loader";
 
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
@@ -114,7 +116,7 @@ const appRouter = createBrowserRouter([
     element: <AuthenticatedUser><ForgotPassword /></AuthenticatedUser>,
   },
   {
-    path: "/reset-password",
+    path: "/reset-password/:token",
     element: <ResetPassword />,
   },
   {
@@ -126,7 +128,13 @@ const appRouter = createBrowserRouter([
 function App() {
 
 
+  const {checkAuth,generateSession,isCheckingAuth} = useUserStore();
+  useEffect(()=>{
+    checkAuth();
+    generateSession();
+  },[checkAuth])
 
+  if(isCheckingAuth)return <Loader/>
   return (
     <main>
       <RouterProvider router={appRouter}></RouterProvider>

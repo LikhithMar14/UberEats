@@ -168,6 +168,9 @@ export const useUserStore = create<UserState>()(persist((set) => ({
       const response = await axios.get<{ success: boolean; user: any }>(`${API_END_POINT}/check-auth`);
       
       if (response.data.success) {
+
+
+        
         set({
           user: response.data.user,
           isAuthenticated: true,
