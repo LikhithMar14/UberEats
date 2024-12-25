@@ -72,7 +72,8 @@ export const signup = asyncHandler(
         contact: true,
         city: true,
         country: true,
-        profilePicture:true
+        profilePicture:true,
+        isVerified:true
       },
     });
 
@@ -122,7 +123,8 @@ export const login = asyncHandler(
         contact: true,
         city: true,
         country: true,
-        profilePicture:true
+        profilePicture:true,
+        isVerified:true
       },
     });
     console.log("Logged In Successfully!");
@@ -152,7 +154,7 @@ export const verifyEmail = asyncHandler(
     });
     console.log("Verification Code in Database:", Human);
 
-    const userDetails = await prisma.user.findFirst({
+    let userDetails = await prisma.user.findFirst({
       where: {
         verificationToken: verificationCode,
         verificationTokenExpiry: {
@@ -179,16 +181,28 @@ export const verifyEmail = asyncHandler(
       );
     }
 
-    await prisma.user.update({
+   userDetails =  await prisma.user.update({
       where: { id: userDetails.id },
       data: {
         isVerified: true,
         verificationToken: "",
         verificationTokenExpiry: null,
       },
+      select:{
+        id: true,
+        fullname: true,
+        email: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+        isVerified: true,
+        profilePicture:true,
+        country:true,
+        city:true
+      }
     });
 
     await sendWelcomeEmail(userDetails.email, userDetails.fullname);
+    console.log(userDetails)
 
     return res.status(STATUS_CODES.OK).json({
       success: true,
@@ -374,6 +388,7 @@ export const updateProfile = asyncHandler(
       where: { id: userId },
       data: updatedData,
       select:{
+        id:true,
         fullname:true,
         email:true,
         address:true,
@@ -401,7 +416,13 @@ export const checkAuth = asyncHandler(
     const user = await prisma.user.findFirst({
       where: { id: userId },
       select: {
-        id: true,
+        id:true,
+        fullname:true,
+        email:true,
+        address:true,
+        city:true,
+        country:true,
+        profilePicture:true
       },
     });
     console.log(user);
@@ -439,6 +460,7 @@ export const generateSession = asyncHandler(
         : undefined;
     const userDetails = await prisma.user.findUnique({
       where: { id: userId },
+      
     });
     if (!userDetails)
       throw new ApiError(STATUS_CODES.NOT_FOUND, "User not found");
